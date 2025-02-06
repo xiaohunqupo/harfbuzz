@@ -98,26 +98,29 @@ struct TrackData
      */
     const TrackTableEntry *trackTableEntry = nullptr;
     unsigned int count = nTracks;
+    float last_trak = 1e5;
     for (unsigned int i = 0; i < count; i++)
     {
       /* Note: Seems like the track entries are sorted by values.  But the
        * spec doesn't explicitly say that.  It just mentions it in the example. */
 
-      /* For now we only seek for track entries with zero tracking value */
+      /* Not sure what CoreText does, but it looks to apply a trak=1.0 by default
+       * if there is no 0.0 trak. So, just pick the one closest to 0.0. */
 
-      if (trackTable[i].get_track_value () == 0.f)
+      float trak = trackTable[i].get_track_value ();
+      if (fabsf (trak) < fabsf (last_trak))
       {
 	trackTableEntry = &trackTable[i];
 	break;
       }
     }
-    if (!trackTableEntry) return 0.;
+    if (!trackTableEntry) return 0;
 
     /*
      * Choose size.
      */
     unsigned int sizes = nSizes;
-    if (!sizes) return 0.;
+    if (!sizes) return 0;
     if (sizes == 1) return trackTableEntry->get_value (base, 0, sizes);
 
     hb_array_t<const F16DOT16> size_table ((base+sizeTable).arrayZ, sizes);
@@ -134,6 +137,7 @@ struct TrackData
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  sizeTable.sanitize (c, base, nSizes) &&
 			  trackTable.sanitize (c, nTracks, base, nSizes)));
   }
@@ -163,9 +167,12 @@ struct trak
 
     hb_mask_t trak_mask = c->plan->trak_mask;
 
-    const float ptem = c->font->ptem;
+    float ptem = c->font->ptem;
     if (unlikely (ptem <= 0.f))
-      return_trace (false);
+    {
+      /* https://developer.apple.com/documentation/coretext/1508745-ctfontcreatewithgraphicsfont */
+      ptem = HB_CORETEXT_DEFAULT_FONT_SIZE;
+    }
 
     hb_buffer_t *buffer = c->buffer;
     if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
@@ -203,6 +210,7 @@ struct trak
     TRACE_SANITIZE (this);
 
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version.major == 1 &&
 			  horizData.sanitize (c, this, this) &&
 			  vertData.sanitize (c, this, this)));
