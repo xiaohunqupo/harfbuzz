@@ -16,9 +16,11 @@ tests = [
   'test-cplusplus.cc',
   'test-common.c',
   'test-draw.c',
+  'test-draw-varc.c',
   'test-extents.c',
   'test-font.c',
   'test-font-scale.c',
+  'test-get-table-tags.c',
   'test-glyph-names.c',
   'test-instance-cff2.c',
   'test-map.c',
@@ -84,9 +86,8 @@ endif
 
 # Default test running environment
 env = environment()
-env.set('MALLOC_CHECK_', '2')
+env.set('MALLOC_CHECK_', '1')
 env.set('G_DEBUG', 'gc-friendly')
-env.set('G_SLICE', 'always-malloc')
 env.set('G_TEST_SRCDIR', meson.current_source_dir())
 env.set('G_TEST_BUILDDIR', meson.current_build_dir())
 
