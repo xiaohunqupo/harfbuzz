@@ -2791,7 +2791,7 @@ struct VarRegionList
     return !regions.in_error ();
   }
 
-  size_t get_size () const { return min_size + VarRegionAxis::static_size * axisCount * regionCount; }
+  size_t get_size () const { return min_size + (size_t) VarRegionAxis::static_size * axisCount * regionCount; }
 
   public:
   HBUINT16	axisCount;
@@ -2868,7 +2868,7 @@ struct VarData
   unsigned get_region_index (unsigned i) const
   { return i >= regionIndices.len ? -1 : regionIndices[i]; }
 
-  unsigned int get_row_size () const
+  size_t get_row_size () const
   { return (wordCount () + regionIndices.len) * (longWords () ? 2 : 1); }
 
   size_t get_size () const
